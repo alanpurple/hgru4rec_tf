@@ -71,7 +71,7 @@ class HGRU4Rec(object):
                 logits=tf.matmul(output,sampled_w,transpose_b=True)+sampled_b
                 logits=tf.tanh(logits)
                 loss=self.top1_loss(logits)
-                tf.summary.histogram('loss over batch',loss)
+                tf.summary.scalar('loss over batch',loss)
                 self.merged=tf.summary.merge_all()
             if mode==0:
                 # Can be other optimizer
@@ -94,8 +94,9 @@ class HGRU4Rec(object):
         with tf.Graph().as_default():
             global_step=tf.train.get_or_create_global_step()
             s_final,loss,train_op,u_final = self.build_model(0,global_step)
-            fetches=[s_final, loss, train_op,u_final]
             train_writer=tf.summary.FileWriter('./model')
+            summary=tf.summary.merge_all()
+            fetches=[s_final, loss, train_op,u_final,summary]
             with tf.Session() as sess:
                 tf.global_variables_initializer().run()
                 for n in range(num_epochs):
@@ -129,6 +130,7 @@ class HGRU4Rec(object):
                         # need to handle loss ( log, etc )
                         print('finishing batch: {}'.format(i))
                         train_writer.add_graph(sess.graph,i)
+                        train_writer.add_summary(result[4],global_step=i)
                         loss_sum+=result[1]
                     print('loss for epoch {}: {}'.format(n+1,loss_sum))
                 tf.train.Saver().save(sess,'./model/'+model_name+'.ckpt',global_step=n)
