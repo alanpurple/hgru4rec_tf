@@ -40,15 +40,19 @@ class HGRU4Rec(object):
             b_embedding=tf.get_variable('b_embedding',[self.item_len])
 
             x_embedded=tf.nn.embedding_lookup(embedding,self.X)
-        s_gru=tf.nn.rnn_cell.GRUCell(self.s_size,name='Session_GRU',reuse=tf.AUTO_REUSE)
+        # s_gru=tf.nn.rnn_cell.GRUCell(self.s_size,name='Session_GRU',reuse=tf.AUTO_REUSE)
         # apply dropout
-        s_gru=tf.nn.rnn_cell.DropoutWrapper(s_gru,self.s_dropout)
-        s_gru=tf.nn.rnn_cell.MultiRNNCell([s_gru]*self.s_depth)
+        # s_gru=tf.nn.rnn_cell.DropoutWrapper(s_gru,self.s_dropout)
+        s_cells=[tf.nn.rnn_cell.DropoutWrapper(tf.nn.rnn_cell.GRUCell(self.s_size,name='Session_GRU_{}'.format(i),reuse=tf.AUTO_REUSE),
+                self.s_dropout) for i in range(self.s_depth)]
+        s_gru=tf.nn.rnn_cell.MultiRNNCell(s_cells)
         
-        u_gru=tf.nn.rnn_cell.GRUCell(self.u_size,name='User_GRU', reuse=tf.AUTO_REUSE)
+        # u_gru=tf.nn.rnn_cell.GRUCell(self.u_size,name='User_GRU', reuse=tf.AUTO_REUSE)
         # apply dropout
-        u_gru=tf.nn.rnn_cell.DropoutWrapper(u_gru,self.u_dropout)
-        u_gru=tf.nn.rnn_cell.MultiRNNCell([u_gru]*self.u_depth)
+        # u_gru=tf.nn.rnn_cell.DropoutWrapper(u_gru,self.u_dropout)
+        u_cells=[tf.nn.rnn_cell.DropoutWrapper(tf.nn.rnn_cell.GRUCell(self.u_size,name='User_GRU_{}'.format(i), reuse=tf.AUTO_REUSE),
+                self.u_dropout) for i in range(self.u_depth)]
+        u_gru=tf.nn.rnn_cell.MultiRNNCell(u_cells)
 
         with tf.name_scope('Session_Reset'):
             with tf.variable_scope('Session_Reset',reuse=tf.AUTO_REUSE):
@@ -61,7 +65,7 @@ class HGRU4Rec(object):
                 s_gru_input=tf.unstack(s_gru_input)
                 
         
-        output,s_final_state=s_gru(x_embedded,tuple(s_gru_input))                                                                                                                                                                                                                                                                                                                                                                                                                            
+        output,s_final_state=s_gru(x_embedded,tuple(s_gru_input))                                                                                                                                                                                                                                                                                                                                                                                                         
 
         # train or eval
         if mode==0 or mode==1:
