@@ -27,8 +27,8 @@ class HGRU4Rec(object):
     # mode - 0: train, 1: eval, 2: predict
     # return 
     def build_model(self,mode,step):
-        self.s_state=[tf.placeholder(tf.float32,(self.batch_size,self.s_size),'Session_State')]*self.s_depth
-        self.u_state=[tf.placeholder(tf.float32,(self.batch_size,self.u_size),'User_State')]*self.u_depth
+        self.s_state=[tf.placeholder(tf.float32,(self.batch_size,self.s_size),'Session_State') for _ in range(self.s_depth)]
+        self.u_state=[tf.placeholder(tf.float32,(self.batch_size,self.u_size),'User_State') for _ in range(self.u_depth)]
         self.flags=tf.placeholder(tf.bool,self.batch_size,'Session_Reset_flags')
         self.X=tf.placeholder(tf.int32,[self.batch_size],name='input')
         if mode==0 or mode==1:
