@@ -105,8 +105,8 @@ class HGRU4Rec(object):
                 tf.global_variables_initializer().run()
                 for n in range(num_epochs):
                     loss_sum=0
-                    current_u_state=[np.zeros([self.batch_size,self.u_size],dtype=np.float32)]*self.u_depth
-                    current_s_state=[np.zeros([self.batch_size,self.s_size],dtype=np.float32)]*self.s_depth
+                    current_u_state=np.zeros([self.u_depth,self.batch_size,self.u_size],dtype=np.float32)
+                    current_s_state=np.zeros([self.s_depth,self.batch_size,self.s_size],dtype=np.float32)
                     for i in range(len(inputs)):
                         current_flags=[elem==1 for elem in flags[i]]
                         for j in range(self.batch_size):
