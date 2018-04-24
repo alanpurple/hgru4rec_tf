@@ -56,10 +56,11 @@ class HGRU4Rec(object):
 
         with tf.name_scope('Session_Reset'):
             with tf.variable_scope('Session_Reset',reuse=tf.AUTO_REUSE):
-                u_output,updated_state=u_gru(tf.layers.dense(self.s_state[-1],self.u_size),tuple(self.u_state))
+                u_output,updated_state=u_gru(tf.layers.dense(self.s_state[-1],self.u_size,tf.nn.elu),tuple(self.u_state))
                 u_state_T = tf.where(self.flags,tf.transpose(updated_state,perm=(1,0,2)),tf.transpose(self.u_state,perm=(1,0,2)),name='user_update')
                 u_state=tf.transpose(u_state_T,perm=(1,0,2))
-                new_s_init_T=tf.transpose([tf.layers.dense(u_output,self.s_size)]*self.s_depth,perm=(1,0,2))
+                dense_output=[tf.layers.dense(u_output,self.s_size,tf.nn.elu) for _ in range(self.s_depth)]
+                new_s_init_T=tf.transpose(dense_output,perm=(1,0,2))
                 s_gru_input_T=tf.where(self.flags,new_s_init_T,tf.transpose(self.s_state,perm=(1,0,2)),name='input_state_for_s_gru')
                 s_gru_input=tf.transpose(s_gru_input_T,perm=(1,0,2))
                 s_gru_input=tf.unstack(s_gru_input)
